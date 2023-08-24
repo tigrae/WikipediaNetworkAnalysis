@@ -74,8 +74,8 @@ def extract_wikipedia_links(article_url):
 
 
 def check_wikipedia_article_exists(url):
-    if not url.startswith("https://en.wikipedia.org"):
-        url = f"https://en.wikipedia.org{url}"
+    if not url.startswith("https://en.wikipedia.org/wiki/"):
+        url = f"https://en.wikipedia.org/wiki/{url}"
     response = requests.head(url)
     return response.status_code == 200
 

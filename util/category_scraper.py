@@ -2,7 +2,7 @@ import requests
 from queue import Queue
 
 
-class Category:
+class Category_Node:
     def __init__(self, name, parent=None, subcategories=None):
         self.name = name
         self.parent = parent
@@ -29,7 +29,8 @@ def get_direct_subcategories(category):
     response = requests.get(url, params=params)
     if response.status_code == 200:
         data = response.json()
-        subcategories = [category['title'].replace("Category:", "") for category in data['query']['categorymembers']]
+        subcategories = [category['title'].replace("Category:", "").replace(" ", "_") for category
+                         in data['query']['categorymembers']]
         return subcategories
     else:
         print('Error retrieving direct subcategories:', response.status_code)
@@ -38,7 +39,7 @@ def get_direct_subcategories(category):
 
 if __name__ == "__main__":
 
-    root_category = Category("Fields of mathematics")
+    root_category = Category_Node("Fields of mathematics")
 
     # define queue for categories not yet explored and categories_done set. Put root category in queue.
     categories_queue = Queue()
@@ -60,7 +61,7 @@ if __name__ == "__main__":
         # create objects for found subcategories, add them to current_category subcategories and queue.
         for category in found_subcategories:
 
-            new_class = Category(category, current_category.name)
+            new_class = Category_Node(category, current_category.name)
             current_category.add_subcategory(new_class)
             categories_queue.put(new_class)
 
