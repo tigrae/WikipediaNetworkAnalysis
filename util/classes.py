@@ -25,7 +25,7 @@ class Category:
             self.autosave = True if autosave is None else autosave
             self.title = title
             self.articles = () if articles is None else set(articles)
-            if not check_wikipedia_article_exists(f"Category:{self.title}"):
+            if not check_wikipedia_article_exists(f"{self.title}"):
                 print(f"\033[91mWarning: Category \"{self.title}\" does not exist.\033[0m")
 
         if self.autosave:
@@ -63,7 +63,7 @@ class Category:
         # get save path
         if filepath is None:
             filepath = get_save_path()
-            filepath = f"{filepath}\\saved\\categories\\{filename}.json"
+            filepath = f"{filepath}\\saved\\categories\\{filename.replace('Category:', '')}.json"
         # make directory
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
         # save file

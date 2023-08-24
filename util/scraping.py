@@ -4,19 +4,26 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
 
+def wiki_url(url):
+    if url.startswith("https://en.wikipedia.org/wiki/"):
+        return url
+    else:
+        return f"https://en.wikipedia.org/wiki/{url}"
+
+
 def url_request(url):
     """
     Make a request to the given url
     :param url
     :return: response of the request
     """
-    return requests.get(url)
+    return requests.get(wiki_url(url))
 
 
-def get_categories(article_url):
+def get_categories(url):
 
     # Make a request to the article URL
-    response = url_request(article_url)
+    response = url_request(url)
 
     # Check if the request was successful
     if response.status_code == 200:

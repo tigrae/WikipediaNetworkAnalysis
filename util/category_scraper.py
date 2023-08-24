@@ -1,5 +1,8 @@
 import requests
+import re
 from queue import Queue
+from bs4 import BeautifulSoup
+from util.scraping import *
 
 
 class Category_Node:
@@ -29,11 +32,43 @@ def get_direct_subcategories(category):
     response = requests.get(url, params=params)
     if response.status_code == 200:
         data = response.json()
-        subcategories = [category['title'].replace("Category:", "").replace(" ", "_") for category
+        subcategories = [category['title'].replace(" ", "_") for category
                          in data['query']['categorymembers']]
         return subcategories
     else:
         print('Error retrieving direct subcategories:', response.status_code)
+        return None
+
+
+def get_pages_in_category(url):
+    # Make a request to the article URL
+    response = url_request(url)
+
+    # Check if the request was successful
+    if response.status_code == 200:
+
+        # Remove everything before "pages in category" from response text
+        text = "".join(response.text.split("Pages in category", 1)[1:])
+
+        # Parse the manipulated HTML content of the article
+        soup = BeautifulSoup(text, 'html.parser')
+
+        # Find all the anchor tags in the article
+        links = soup.find_all('a')
+
+        # Extract the Wikipedia links
+        wikipedia_links = set()
+        for link in links:
+            href = link.get('href')
+            if href and re.match(r'^/wiki/[^:]+$', href):
+                wikipedia_links.add(href.replace("/wiki/", ""))
+
+        # Remove the link to Main Page
+        wikipedia_links.discard("Main_Page")
+
+        return list(wikipedia_links)
+    else:
+        print('Error retrieving article:', response.status_code)
         return None
 
 

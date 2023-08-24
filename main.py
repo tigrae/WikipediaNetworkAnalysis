@@ -1,4 +1,4 @@
-from util.category_scraper import get_direct_subcategories
+from util.category_scraper import get_direct_subcategories, get_pages_in_category
 from util.classes import Category, Article
 
 if __name__ == "__main__":
@@ -7,5 +7,6 @@ if __name__ == "__main__":
     subcategories = get_direct_subcategories(root_category)
 
     for subcategory in subcategories:
-        Category(subcategory)
+        pages = get_pages_in_category(subcategory)
+        Category(subcategory, pages)
 
