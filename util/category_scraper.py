@@ -3,6 +3,7 @@ import re
 from queue import Queue
 from bs4 import BeautifulSoup
 from util.scraping import *
+from urllib.parse import quote
 
 
 class Category_Node:
@@ -61,7 +62,7 @@ def get_pages_in_category(url):
         for link in links:
             href = link.get('href')
             if href and re.match(r'^/wiki/[^:]+$', href):
-                wikipedia_links.add(href.replace("/wiki/", ""))
+                wikipedia_links.add(url_encode(href.replace("/wiki/", "")))
 
         # Remove the link to Main Page
         wikipedia_links.discard("Main_Page")

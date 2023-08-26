@@ -4,6 +4,9 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
 
+def url_encode(url):
+    return url.replace("*", "%2A").replace("/", "%2F")
+
 def wiki_url(url):
     if url.startswith("https://en.wikipedia.org/wiki/"):
         return url
