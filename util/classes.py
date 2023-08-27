@@ -1,8 +1,9 @@
 import os
 import json
+import glob
+import tqdm
 import warnings
 from util.scraping import *
-from urllib.parse import quote
 
 
 def get_save_path():
@@ -23,6 +24,41 @@ def get_save_path():
     if path.endswith("util"):
         path = os.path.dirname(path)
     return path
+
+
+def load_all_categories(save_dir):
+    """
+    Loads all categories from json files in a given directory.
+    :param save_dir: Path to directory with category json files
+    :return: List of all category instances initialized by the function
+    """
+    category_json_files = glob.glob(os.path.join(save_dir, "*.json"))
+    categories = []
+    for file in category_json_files:
+        current_category = Category(file)
+        categories.append(current_category)
+    return categories
+
+
+def load_all_articles(save_dir):
+    """
+    Loads all articles from json files in a given directory.
+    :param save_dir: Path to directory with article json files
+    :return: List of all article instances initialized by the function
+    """
+    article_json_files = glob.glob(os.path.join(save_dir, "*.json"))
+    articles = []
+    for file in article_json_files:
+        current_article = Article(file)
+        articles.append(current_article)
+    return articles
+
+
+def get_num_pages_in_categories(category_list):
+    num_articles = 0
+    for category in category_list:
+        num_articles += len(category.articles)
+    return num_articles
 
 
 class Category:
@@ -127,7 +163,7 @@ class Article:
     Class representing a wikipedia article
     Contains title of the article and related articles, which are other articles linked in the text of the page.
     """
-    def __init__(self, title, relations=None, root_cats=None, fill=False, autosave=None):
+    def __init__(self, title, source=None, relations=None, root_cats=None, related_cats=None, fill=False, autosave=None):
         """
         Initialize a article instance
         :param title: title of the article or path to .json file to load instance from
@@ -137,16 +173,37 @@ class Article:
         :param autosave: manual call of the save() function necessary if False. Default: True
         """
 
+        file_path = f"{get_save_path()}\\saved\\articles\\{url_encode(title)}.json"
+        exists = os.path.exists(file_path)
+
         if title.endswith(".json"):
+            """ load instance from json file """
             self.load(title)
             # overwrite autosave settings
-            if autosave is not None:
-                self.autosave = autosave
+            self.autosave = autosave if autosave is not None else self.autosave
+
+        elif exists:
+            """ update instance if it already exists"""
+            # print(f"{title} already exists.")
+            self.load(file_path)
+            self.add_relations(relations) if relations is not None else None
+            self.add_root_cats(root_cats) if root_cats is not None else None
+            self.add_related_cats(related_cats) if related_cats is not None else None
+
+            # overwrite autosave settings
+            self.autosave = autosave if autosave is not None else self.autosave
+
+            if self.autosave:
+                self.save()
+
         else:
+            """ initialize new instance """
             self.autosave = True if autosave is None else autosave
             self.title = url_encode(title)
+            self.source = set() if source is None else {source}
             self.relations = set() if relations is None else {relations} if isinstance(relations, str) else set(relations)
             self.root_cats = set() if root_cats is None else {root_cats} if isinstance(root_cats, str) else set(root_cats)
+            self.related_cats = set() if related_cats is None else {related_cats} if isinstance(related_cats, str) else set(related_cats)
 
             if not check_wikipedia_article_exists(self.title):
                 print(f"\033[91mWarning: Article \"{self.title}\" does not exist.\033[0m")
@@ -156,7 +213,52 @@ class Article:
                 self.save()
 
         if fill:
-            pass
+            self.fill()
+
+    def fill(self):
+        """ get related articles """
+        related_articles = set(extract_wikipedia_links(self.title))
+        self.add_relations(related_articles)
+
+    def add_root_cats(self, root_cats):
+        """ adds one or more root category to the article """
+        if isinstance(root_cats, str):
+            self.root_cats.add(root_cats)
+        elif isinstance(root_cats, list):
+            self.root_cats.update(root_cats)
+
+        if self.autosave:
+            self.save()
+
+    def add_relations(self, relations):
+        """ adds one or more related articles to the article """
+        if isinstance(relations, str):
+            self.relations.add(relations)
+        elif isinstance(relations, (list, set)):
+            self.relations.update(relations)
+
+        if self.autosave:
+            self.save()
+
+    def add_related_cats(self, related_cats):
+        """ adds one or more related articles to the article """
+        if isinstance(related_cats, str):
+            self.related_cats.add(related_cats)
+        elif isinstance(related_cats, (list, set)):
+            self.related_cats.update(related_cats)
+
+        if self.autosave:
+            self.save()
+
+    def add_source(self, source):
+        """ adds one or more related articles to the article """
+        if isinstance(source, str):
+            self.source.add(source)
+        elif isinstance(source, (list, set)):
+            self.source.update(source)
+
+        if self.autosave:
+            self.save()
 
     def _create_instance_dict(self):
         """ return instance attributes as dict for saving """
@@ -164,8 +266,10 @@ class Article:
             "type": "Article",
             "autosave": self.autosave,
             "title": self.title,
-            "relations": list(self.relations),
-            "root categories": list(self.root_cats)
+            "source": list(self.source),
+            "root categories": list(self.root_cats),
+            "related categories": list(self.related_cats),
+            "relations": list(self.relations)
         }
 
     def save(self, filename=None, filepath=None):
@@ -197,7 +301,10 @@ class Article:
         if data["type"] == "Article":
             self.autosave = data["autosave"]
             self.title = data["title"]
+            self.source = data["source"]
             self.relations = set(data["relations"])
+            self.root_cats = set(data["root categories"])
+            self.related_cats = set(data["related categories"])
         else:
             raise ValueError(f"Loading Article: \"{path}\" is not an Article.")
 
@@ -206,6 +313,7 @@ class Article:
 
 
 if __name__ == "__main__":
+    """ main block for testing only """
 
     test = Category("Mathematics", ["Whoopsiedoodle", "Schwoppbobberekoogar"])
     test.save()

@@ -70,9 +70,7 @@ def extract_wikipedia_links(article_url):
         for link in links:
             href = link.get('href')
             if href and re.match(r'^/wiki/[^:]+$', href):
-                wikipedia_links.add(href)
-
-        pass
+                wikipedia_links.add(url_encode(href.replace("/wiki/", "").split("#", 1)[0]))
 
         # Remove the link to the page itself
         wikipedia_links.discard(article_url.replace("https://en.wikipedia.org", ""))
@@ -84,9 +82,9 @@ def extract_wikipedia_links(article_url):
 
 
 def check_wikipedia_article_exists(url):
-    if not url.startswith("https://en.wikipedia.org/wiki/"):
-        url = f"https://en.wikipedia.org/wiki/{url}"
-    response = requests.head(url)
+    # if not url.startswith("https://en.wikipedia.org/wiki/"):
+    #     url = f"https://en.wikipedia.org/wiki/{url}"
+    response = requests.head(wiki_url(url))
     return response.status_code == 200
 
 
