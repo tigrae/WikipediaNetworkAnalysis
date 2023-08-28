@@ -34,13 +34,13 @@ def load_all_categories(save_dir):
     """
     category_json_files = glob.glob(os.path.join(save_dir, "*.json"))
     categories = []
-    for file in category_json_files:
+    for file in tqdm.tqdm(category_json_files, desc=f"Loading categories from {save_dir}"):
         current_category = Category(file)
         categories.append(current_category)
     return categories
 
 
-def load_all_articles(save_dir):
+def load_all_articles(save_dir, autosave=True):
     """
     Loads all articles from json files in a given directory.
     :param save_dir: Path to directory with article json files
@@ -48,8 +48,8 @@ def load_all_articles(save_dir):
     """
     article_json_files = glob.glob(os.path.join(save_dir, "*.json"))
     articles = []
-    for file in article_json_files:
-        current_article = Article(file)
+    for file in tqdm.tqdm(article_json_files, desc=f"Loading articles from {save_dir}"):
+        current_article = Article(file, autosave=autosave)
         articles.append(current_article)
     return articles
 
@@ -285,6 +285,9 @@ class Article:
         if filepath is None:
             filepath = get_save_path()
             filepath = f"{filepath}\\saved\\articles\\{filename}.json"
+        elif filepath == "./saved/_root_articles":
+            filepath = get_save_path()
+            filepath = f"{filepath}\\saved\\_root_articles\\{filename}.json"
         # make directory
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
         # save file
@@ -301,7 +304,7 @@ class Article:
         if data["type"] == "Article":
             self.autosave = data["autosave"]
             self.title = data["title"]
-            self.source = data["source"]
+            self.source = set(data.get("source", set()))
             self.relations = set(data["relations"])
             self.root_cats = set(data["root categories"])
             self.related_cats = set(data["related categories"])
