@@ -26,7 +26,7 @@ def get_save_path():
     return path
 
 
-def load_all_categories(save_dir):
+def load_all_categories(save_dir, autosave=True):
     """
     Loads all categories from json files in a given directory.
     :param save_dir: Path to directory with category json files
@@ -35,7 +35,7 @@ def load_all_categories(save_dir):
     category_json_files = glob.glob(os.path.join(save_dir, "*.json"))
     categories = []
     for file in tqdm.tqdm(category_json_files, desc=f"Loading categories from {save_dir}"):
-        current_category = Category(file)
+        current_category = Category(file, autosave=autosave)
         categories.append(current_category)
     return categories
 

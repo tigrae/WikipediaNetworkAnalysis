@@ -63,8 +63,6 @@ def extract_wikipedia_links(article_url):
         # Find all the anchor tags in the article
         links = soup.find_all('a')
 
-        pass
-
         # Extract the Wikipedia links
         wikipedia_links = set()
         for link in links:
