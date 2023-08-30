@@ -1,3 +1,4 @@
+import sys
 from util import *
 
 
@@ -19,12 +20,14 @@ if __name__ == "__main__":
 
     """ load categories and articles """
     categories = load_all_categories("./saved/categories")
-    articles = load_all_articles("./saved/articles")
+    articles = load_all_articles("./saved/_root_articles")
 
     """ get number of categories """
     article_count_by_root_cats = count_articles_by_root_cats(articles)
     for num_root_cats, count in article_count_by_root_cats.items():
         print(f"Articles with {num_root_cats} root categories: {count}")
+
+    sys.exit()
 
     """ fill articles """
     for article in tqdm.tqdm(articles, desc="Finding related articles"):
