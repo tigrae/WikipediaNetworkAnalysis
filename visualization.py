@@ -92,14 +92,10 @@ def draw_category_article_number(categories, n=0):
     axs[1].set_title('Indirectly Linked Articles')
     axs[1].set_xlabel('Number of Articles')
 
-    # Annotate bars with their values
-    for bar in bars1:
-        axs[0].text(bar.get_width(), bar.get_y() + bar.get_height() / 2, f'{bar.get_width():.0f}', ha='left',
-                    va='center', color='black')
-
-    for bar in bars2:
-        axs[1].text(bar.get_width(), bar.get_y() + bar.get_height() / 2, f'{bar.get_width():.0f}', ha='left',
-                    va='center', color='black')
+    for i, bars in enumerate([bars1, bars2]):
+        for bar in bars:
+            axs[i].text(bar.get_width(), bar.get_y() + bar.get_height() / 2, f'{bar.get_width():.0f}', ha='left',
+                            va='center', color='black')
 
     # Configure grid and layout
     axs[0].grid(axis='x', which='both', linestyle='dashed', linewidth=0.8, color='gray')
