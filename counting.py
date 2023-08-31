@@ -1,3 +1,6 @@
+"""
+This script contains several functions used to count certain values of multiple articles or categories
+"""
 import matplotlib.pyplot as plt
 from util.classes import *
 
@@ -88,28 +91,28 @@ if __name__ == "__main__":
     # count_relations(articles)
 
     """ get number of related categories """
-    # article_count_by_related_cats = count_articles_by_related_cats(articles)
+    article_count_by_related_cats = count_articles_by_related_cats(articles)
     # for num_related_cats, count in article_count_by_related_cats.items():
     #     print(f"Articles with {num_related_cats} related categories: {count}")
 
     """ get number of related categories """
-    # article_count_by_related_cats = count_sources(articles, prt=True)
+    article_count_by_related_cats = count_sources(articles, prt=True)
 
     """ get number of category occurrences in articles """
     ncaia = count_cat_occurrences_in_articles(categories, articles)
 
-    fig, ax = plt.subplots(figsize=(10, 6))
-    bars = ax.barh(list(ncaia.keys())[::-1], list(ncaia.values())[::-1], color='blue')
-    plt.xlabel("Number of occurrences")
-    plt.ylabel("Category")
-    plt.title("Category Occurrences in Articles")
-    plt.tight_layout()
-
-    for bar in bars:
-        plt.text(bar.get_width(), bar.get_y() + bar.get_height() / 2, f'{bar.get_width():.0f}', ha='left',
-                 va='center', color='black')
-
-    ax.grid(axis='x', which='both', linestyle='dashed', linewidth=0.8, color='gray')
-
-    plt.show()
+    # fig, ax = plt.subplots(figsize=(10, 6))
+    # bars = ax.barh(list(ncaia.keys())[::-1], list(ncaia.values())[::-1], color='blue')
+    # plt.xlabel("Number of occurrences")
+    # plt.ylabel("Category")
+    # plt.title("Category Occurrences in Articles")
+    # plt.tight_layout()
+    #
+    # for bar in bars:
+    #     plt.text(bar.get_width(), bar.get_y() + bar.get_height() / 2, f'{bar.get_width():.0f}', ha='left',
+    #              va='center', color='black')
+    #
+    # ax.grid(axis='x', which='both', linestyle='dashed', linewidth=0.8, color='gray')
+    #
+    # plt.show()
 

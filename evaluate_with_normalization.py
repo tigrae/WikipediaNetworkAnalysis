@@ -8,6 +8,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from util.classes import load_all_articles, load_all_categories
 from itertools import combinations
+from counting import count_cat_occurrences_in_articles
+from statistics import mean
 
 
 if __name__ == "__main__":
@@ -33,10 +35,24 @@ if __name__ == "__main__":
             for comb in article_cat_combs:
                 cat_comb_occurrences[comb] += 1
 
+    """ Normalize values """
+    rep = count_cat_occurrences_in_articles(categories, articles)
+    rep_mean = mean([value for value in rep.values()])
+    normalized_cat_comb_occurrences = dict()
+    for comb, value in cat_comb_occurrences.items():
+        # calculate normalization factor
+        comb_list = comb.split("+")
+        cat_a = f"Category:{comb_list[0]}"
+        cat_b = f"Category:{comb_list[1]}"
+        normalization_factor = 1/(rep[cat_a]/rep_mean) + 1/(rep[cat_b]/rep_mean)
+        normalized_cat_comb_occurrences[comb] = cat_comb_occurrences[comb] * normalization_factor
+
+    pass
+
 
     """ Visualize relations in table """
     value_array = np.array([[0 for _ in range(22)] for _ in range(22)])
-    for cat_pair, value in cat_comb_occurrences.items():
+    for cat_pair, value in normalized_cat_comb_occurrences.items():
         cat_pair = cat_pair.split("+")
         value_array[category_titles.index(cat_pair[0])][category_titles.index(cat_pair[1])] = value
         value_array[category_titles.index(cat_pair[1])][category_titles.index(cat_pair[0])] = value
@@ -75,17 +91,17 @@ if __name__ == "__main__":
     node_data = [["Id", "Label"]]
     for i, category in enumerate(category_titles):
         node_data.append([i, category.replace("Category:", "")])
-    with open("./results/nodes.csv", "w", newline="") as csvfile:
+    with open("./results/nodes_normalized.csv", "w", newline="") as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=";")
         for row in node_data:
             csvwriter.writerow(row)
 
     """ Create edge csv """
     edge_data = [["Source", "Target", "Type", "Weight"]]
-    for key, value in cat_comb_occurrences.items():
+    for key, value in normalized_cat_comb_occurrences.items():
         source, target = key.split("+")
-        edge_data.append([category_titles.index(source), category_titles.index(target), "Undirected", value])
-    with open("./results/edges.csv", "w", newline="") as csvfile:
+        edge_data.append([category_titles.index(source), category_titles.index(target), "Undirected", round(value)])
+    with open("./results/edges_normalized.csv", "w", newline="") as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=";")
         for row in edge_data:
             csvwriter.writerow(row)
